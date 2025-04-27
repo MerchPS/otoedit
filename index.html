@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Foto Otomatis - Cahaya Berkat Electronial</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to bottom right, white, orange);
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    h1 {
+      margin-top: 20px;
+      color: #333;
+    }
+    #canvasWrapper {
+      position: relative;
+      margin: 20px auto;
+      width: 500px;
+      height: 500px;
+      background: linear-gradient(to bottom right, white, orange);
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      border-radius: 15px;
+      overflow: hidden;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+    }
+    #upload {
+      margin: 20px;
+    }
+    #download {
+      background: orange;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    #download:hover {
+      background: darkorange;
+    }
+    .watermark {
+      position: absolute;
+      font-weight: bold;
+      color: white;
+      text-shadow: 2px 2px 5px rgba(0,0,0,0.7);
+      font-size: 24px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Cahaya Berkat Electronial</h1>
+  <input type="file" id="upload" accept="image/*">
+  <div id="canvasWrapper">
+    <canvas id="canvas" width="500" height="500"></canvas>
+  </div>
+  <button id="download">Download Hasil</button>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const upload = document.getElementById('upload');
+    const download = document.getElementById('download');
+
+    // Fungsi gambar background dan text ornamen
+    function drawTemplate() {
+      // Gradasi background
+      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      gradient.addColorStop(0, "white");
+      gradient.addColorStop(1, "orange");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Tulisan ornamen
+      ctx.font = "bold 30px Poppins";
+      ctx.fillStyle = "white";
+      ctx.textAlign = "center";
+      ctx.fillText("COD INSTANT", canvas.width / 2, 50);
+      
+      ctx.font = "bold 26px Poppins";
+      ctx.fillText("HARGA TERMURAH", canvas.width / 2, canvas.height - 30);
+
+      ctx.save();
+      ctx.translate(20, canvas.height / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.font = "bold 20px Poppins";
+      ctx.fillText("Cahaya Berkat Electronial", 0, 0);
+      ctx.restore();
+    }
+
+    function handleUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          // Draw background + template dulu
+          drawTemplate();
+
+          // Hitung supaya produk di tengah
+          let scale = Math.min(400 / img.width, 400 / img.height);
+          let x = (canvas.width - img.width * scale) / 2;
+          let y = (canvas.height - img.height * scale) / 2;
+
+          ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+        }
+        img.src = e.target.result;
+      }
+      reader.readAsDataURL(file);
+    }
+
+    function downloadImage() {
+      const link = document.createElement('a');
+      link.download = 'produk-cahaya-berkat-electronial.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+
+    upload.addEventListener('change', handleUpload);
+    download.addEventListener('click', downloadImage);
+
+    // Gambar background awal
+    drawTemplate();
+  </script>
+
+</body>
+</html>
