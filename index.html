@@ -1,182 +1,136 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Foto Otomatis - Cahaya Berkat Electronial</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Auto Edit Produk - Cahaya Berkat Electrical</title>
   <style>
     body {
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(to bottom right, white, orange);
-      margin: 0;
-      padding: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #ffffff, #ff8c00);
       text-align: center;
+      padding: 20px;
     }
-    h1 {
-      margin-top: 20px;
-      color: #333;
-    }
-    #canvasWrapper {
+    #template {
       position: relative;
-      margin: 20px auto;
-      width: 500px;
-      height: 500px;
-      background: linear-gradient(to bottom right, white, orange);
-      box-shadow: 0 0 20px rgba(0,0,0,0.2);
-      border-radius: 15px;
-      overflow: hidden;
+      width: 768px;
+      height: 768px;
+      background: url('Tameplate1.jpg') no-repeat center/contain;
+      margin: auto;
     }
-    canvas {
-      width: 100%;
-      height: 100%;
-    }
-    #upload {
-      margin: 20px;
-    }
-    #download {
-      background: orange;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      font-size: 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    #download:hover {
-      background: darkorange;
-    }
-    .watermark {
+    #productImage {
       position: absolute;
-      font-weight: bold;
+      top: 120px;
+      left: 120px;
+      width: 528px;
+      height: 528px;
+      object-fit: contain;
+      filter: saturate(1.2) brightness(1.05);
+    }
+    #uploadArea {
+      margin-top: 20px;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #ff8c00;
+      border: none;
       color: white;
-      text-shadow: 2px 2px 5px rgba(0,0,0,0.7);
-      font-size: 24px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+    button:hover {
+      background-color: #e67600;
+    }
+    #loading {
+      display: none;
+      font-size: 18px;
+      margin-top: 10px;
+      color: #ff8c00;
     }
   </style>
 </head>
 <body>
 
-  <h1>Cahaya Berkat Electronial</h1>
-  <input type="file" id="upload" accept="image/*">
-  <div id="canvasWrapper">
-    <canvas id="canvas" width="500" height="500"></canvas>
+  <h1>Cahaya Berkat Electrical</h1>
+  
+  <div id="template">
+    <img id="productImage" src="" alt="">
   </div>
-  <button id="download">Download Hasil</button>
+
+  <div id="uploadArea">
+    <input type="file" id="upload" accept="image/*">
+    <br>
+    <button onclick="downloadImage()">Download Hasil</button>
+    <div id="loading">Processing... Mohon tunggu...</div>
+  </div>
+
+  <canvas id="canvas" style="display:none;"></canvas>
 
   <script>
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const upload = document.getElementById('upload');
-    const download = document.getElementById('download');
+    const uploadInput = document.getElementById('upload');
+    const productImage = document.getElementById('productImage');
+    const loadingText = document.getElementById('loading');
 
-    // Preload logos
-    const logos = {
-      shopee: new Image(),
-      cod: new Image(),
-      instant: new Image(),
-      termurah: new Image(),
-      garansi: new Image()
-    };
-    
-    // Load all logos
-    logos.shopee.src = 'https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg';
-    logos.cod.src = 'https://i.ibb.co/6nBQq0L/cod-logo.png'; // Placeholder - replace with actual COD logo
-    logos.instant.src = 'https://i.ibb.co/0jqWY0K/instant-delivery.png'; // Placeholder - replace with actual instant logo
-    logos.termurah.src = 'https://i.ibb.co/7Yv4q3L/termurah-logo.png'; // Placeholder - replace with actual termurah logo
-    logos.garansi.src = 'https://i.ibb.co/0jqWY0K/garansi-logo.png'; // Placeholder - replace with actual garansi logo
-
-    // Fungsi gambar background dan text ornamen
-    function drawTemplate() {
-      // Gradasi background
-      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-      gradient.addColorStop(0, "white");
-      gradient.addColorStop(1, "orange");
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Draw logos
-      if (logos.shopee.complete) {
-        ctx.drawImage(logos.shopee, 20, 20, 100, 30);
-      }
-      
-      if (logos.cod.complete) {
-        ctx.drawImage(logos.cod, canvas.width - 120, 20, 100, 40);
-      }
-      
-      if (logos.instant.complete) {
-        ctx.drawImage(logos.instant, canvas.width - 120, 70, 100, 40);
-      }
-      
-      if (logos.termurah.complete) {
-        ctx.drawImage(logos.termurah, 20, canvas.height - 60, 120, 40);
-      }
-      
-      if (logos.garansi.complete) {
-        ctx.drawImage(logos.garansi, canvas.width/2 - 60, canvas.height - 60, 120, 40);
-      }
-
-      // Tulisan ornamen
-      ctx.font = "bold 30px Poppins";
-      ctx.fillStyle = "white";
-      ctx.textAlign = "center";
-      ctx.fillText("COD INSTANT", canvas.width / 2, 50);
-      
-      ctx.font = "bold 26px Poppins";
-      ctx.fillText("HARGA TERMURAH", canvas.width / 2, canvas.height - 30);
-
-      ctx.save();
-      ctx.translate(20, canvas.height / 2);
-      ctx.rotate(-Math.PI / 2);
-      ctx.font = "bold 20px Poppins";
-      ctx.fillText("Cahaya Berkat Electronial", 0, 0);
-      ctx.restore();
-    }
-
-    function handleUpload(event) {
+    uploadInput.addEventListener('change', async (event) => {
       const file = event.target.files[0];
       if (!file) return;
 
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const img = new Image();
-        img.onload = function() {
-          // Clear canvas
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          
-          // Draw background + template dulu
-          drawTemplate();
+      loadingText.style.display = 'block';
 
-          // Hitung supaya produk di tengah
-          let scale = Math.min(350 / img.width, 350 / img.height);
-          let x = (canvas.width - img.width * scale) / 2;
-          let y = (canvas.height - img.height * scale) / 2;
+      const formData = new FormData();
+      formData.append("image_file", file);
+      formData.append("size", "auto");
 
-          ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
-        }
-        img.src = e.target.result;
+      try {
+        const response = await fetch("https://api.remove.bg/v1.0/removebg", {
+          method: "POST",
+          headers: {
+            "X-Api-Key": "EbXy74E74UedZKwepUDPpKdP",
+          },
+          body: formData,
+        });
+
+        if (!response.ok) throw new Error("Gagal menghapus background.");
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+
+        productImage.src = url;
+      } catch (error) {
+        alert(error.message);
+      } finally {
+        loadingText.style.display = 'none';
       }
-      reader.readAsDataURL(file);
-    }
-
-    function downloadImage() {
-      const link = document.createElement('a');
-      link.download = 'produk-cahaya-berkat-electronial.png';
-      link.href = canvas.toDataURL();
-      link.click();
-    }
-
-    // Redraw template when logos are loaded
-    Object.values(logos).forEach(logo => {
-      logo.onload = function() {
-        drawTemplate();
-      };
     });
 
-    upload.addEventListener('change', handleUpload);
-    download.addEventListener('click', downloadImage);
+    function downloadImage() {
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
 
-    // Gambar background awal
-    drawTemplate();
+      // Ukuran sama seperti template
+      canvas.width = 768;
+      canvas.height = 768;
+
+      const template = new Image();
+      template.src = 'Tameplate1.jpg';
+
+      const product = new Image();
+      product.src = productImage.src;
+
+      template.onload = () => {
+        ctx.drawImage(template, 0, 0, 768, 768);
+        product.onload = () => {
+          ctx.drawImage(product, 120, 120, 528, 528);
+
+          const link = document.createElement('a');
+          link.download = 'produk-cahaya-berkat-electrical.png';
+          link.href = canvas.toDataURL();
+          link.click();
+        }
+      }
+    }
   </script>
 
 </body>
