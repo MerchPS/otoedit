@@ -69,6 +69,22 @@
     const upload = document.getElementById('upload');
     const download = document.getElementById('download');
 
+    // Preload logos
+    const logos = {
+      shopee: new Image(),
+      cod: new Image(),
+      instant: new Image(),
+      termurah: new Image(),
+      garansi: new Image()
+    };
+    
+    // Load all logos
+    logos.shopee.src = 'https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg';
+    logos.cod.src = 'https://i.ibb.co/6nBQq0L/cod-logo.png'; // Placeholder - replace with actual COD logo
+    logos.instant.src = 'https://i.ibb.co/0jqWY0K/instant-delivery.png'; // Placeholder - replace with actual instant logo
+    logos.termurah.src = 'https://i.ibb.co/7Yv4q3L/termurah-logo.png'; // Placeholder - replace with actual termurah logo
+    logos.garansi.src = 'https://i.ibb.co/0jqWY0K/garansi-logo.png'; // Placeholder - replace with actual garansi logo
+
     // Fungsi gambar background dan text ornamen
     function drawTemplate() {
       // Gradasi background
@@ -77,6 +93,27 @@
       gradient.addColorStop(1, "orange");
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw logos
+      if (logos.shopee.complete) {
+        ctx.drawImage(logos.shopee, 20, 20, 100, 30);
+      }
+      
+      if (logos.cod.complete) {
+        ctx.drawImage(logos.cod, canvas.width - 120, 20, 100, 40);
+      }
+      
+      if (logos.instant.complete) {
+        ctx.drawImage(logos.instant, canvas.width - 120, 70, 100, 40);
+      }
+      
+      if (logos.termurah.complete) {
+        ctx.drawImage(logos.termurah, 20, canvas.height - 60, 120, 40);
+      }
+      
+      if (logos.garansi.complete) {
+        ctx.drawImage(logos.garansi, canvas.width/2 - 60, canvas.height - 60, 120, 40);
+      }
 
       // Tulisan ornamen
       ctx.font = "bold 30px Poppins";
@@ -103,11 +140,14 @@
       reader.onload = function(e) {
         const img = new Image();
         img.onload = function() {
+          // Clear canvas
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
           // Draw background + template dulu
           drawTemplate();
 
           // Hitung supaya produk di tengah
-          let scale = Math.min(400 / img.width, 400 / img.height);
+          let scale = Math.min(350 / img.width, 350 / img.height);
           let x = (canvas.width - img.width * scale) / 2;
           let y = (canvas.height - img.height * scale) / 2;
 
@@ -124,6 +164,13 @@
       link.href = canvas.toDataURL();
       link.click();
     }
+
+    // Redraw template when logos are loaded
+    Object.values(logos).forEach(logo => {
+      logo.onload = function() {
+        drawTemplate();
+      };
+    });
 
     upload.addEventListener('change', handleUpload);
     download.addEventListener('click', downloadImage);
